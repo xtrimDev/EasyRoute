@@ -13,6 +13,8 @@ const MapApp = () => {
   const [showDirections, setShowDirections] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  const [features, setFeatures] = useState<GeoJSON.Feature[]>([]);
+
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen().catch((err) => {
@@ -37,7 +39,7 @@ const MapApp = () => {
 
   return (
     <div className="relative h-full w-full bg-gray-100">
-      <MapCanvas>
+      <MapCanvas setFeatures={setFeatures}>
       
       {/* menu for small devices */}
       {!isMobileMenuOpen ? (
@@ -57,7 +59,7 @@ const MapApp = () => {
           {showDirections ? (
             <DirectionsPanel onClose={toggleDirections} />
           ) : (
-            <SearchBar onGetDirections={toggleDirections} />
+            <SearchBar features={features} onGetDirections={toggleDirections} />
           )}
         </div>
       </div>

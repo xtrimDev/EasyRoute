@@ -1,22 +1,35 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useContext } from "react";
 import { Search, MapPin, X } from "lucide-react";
+import { MapContext } from "./MapContext";
+import * as turf from "@turf/turf";
+import L from 'leaflet';
+
 
 interface SearchBarProps {
   onGetDirections: () => void;
+  features?: any;
 }
 
-const MOCK_SEARCH_RESULTS = [
-  { id: 1, name: "Central Park", address: "New York, NY 10022" },
-  { id: 2, name: "Empire State Building", address: "350 Fifth Avenue, New York, NY 10118" },
-  { id: 3, name: "Golden Gate Bridge", address: "San Francisco, CA 94129" },
-  { id: 4, name: "Times Square", address: "Manhattan, NY 10036" },
-];
+const redIcon = new L.Icon({
+  iconUrl:
+    "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
 
-const SearchBar: React.FC<SearchBarProps> = ({ onGetDirections }) => {
+const SearchBar: React.FC<SearchBarProps> = ({ onGetDirections, features }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showResults, setShowResults] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const resultsContainerRef = useRef<HTMLDivElement>(null);
+  const map = useContext(MapContext);
+
+  const markerRef = useRef<L.Marker | null>(null);
+
 
   useEffect(() => {
     // Close search results when clicking outside
@@ -49,26 +62,58 @@ const SearchBar: React.FC<SearchBarProps> = ({ onGetDirections }) => {
   const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchTerm(value);
-    setShowResults(value.length > 0);
+    setShowResults(value.trim().length > 0);
   };
 
-  const handleSearchResultClick = (resultName: string) => {
-    setSearchTerm(resultName);
-    setShowResults(false);
+const handleSearchResultClick = (resultFeature: any) => {
+  const coords = turf.center(resultFeature).geometry.coordinates;
+  const latlng: [number, number] = [coords[1], coords[0]];
 
-    // In a real app, you would center the map on the selected location
-    console.log("Selected location:", resultName);
-  };
+  if (!map) return;
+
+  // Remove previous marker if it exists
+  if (markerRef.current) {
+    map.removeLayer(markerRef.current);
+  }
+
+  // Create a new marker with the custom red icon
+  const newMarker = L.marker(latlng, {
+    icon: redIcon,
+    title: resultFeature.properties?.name || "Selected Location",
+  }).addTo(map);
+
+  markerRef.current = newMarker; // store it
+
+  map.setView(latlng, 17); // zoom in
+  setSearchTerm(resultFeature.properties?.name || "");
+  setShowResults(false);
+};
+
 
   const handleClearSearch = () => {
     setSearchTerm("");
     searchInputRef.current?.focus();
   };
 
-  const filteredResults = MOCK_SEARCH_RESULTS.filter(
-    (result) =>
-      result.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      result.address.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredResults = Array.from(
+    new Map(
+      (features || [])
+        .filter((feature: any) => {
+          const name = feature.properties?.name || "";
+          const address = feature.properties?.address || "";
+
+          return (
+            name.toLowerCase().includes(searchTerm.trim().toLowerCase()) ||
+            address.toLowerCase().includes(searchTerm.trim().toLowerCase())
+          );
+        })
+        .map((feature: any) => {
+          const key = `${feature.properties?.name ?? ""}|${
+            feature.properties?.address ?? ""
+          }`;
+          return [key, feature]; // [key, value] for Map
+        })
+    ).values()
   );
 
   return (
@@ -106,11 +151,11 @@ const SearchBar: React.FC<SearchBarProps> = ({ onGetDirections }) => {
           >
             {filteredResults.length > 0 ? (
               <ul>
-                {filteredResults.map((result) => (
+                {filteredResults.map((feature: any, index: number) => (
                   <li
-                    key={result.id}
+                    key={feature.id || index}
                     className="px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
-                    onClick={() => handleSearchResultClick(result.name)}
+                    onClick={() => handleSearchResultClick(feature)}
                   >
                     <div className="flex items-start">
                       <MapPin
@@ -118,9 +163,8 @@ const SearchBar: React.FC<SearchBarProps> = ({ onGetDirections }) => {
                         className="text-gray-400 mt-1 mr-2 flex-shrink-0"
                       />
                       <div>
-                        <div className="font-medium">{result.name}</div>
-                        <div className="text-sm text-gray-500">
-                          {result.address}
+                        <div className="font-medium">
+                          {feature.properties?.name || "Unnamed Feature"}
                         </div>
                       </div>
                     </div>

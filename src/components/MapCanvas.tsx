@@ -4,7 +4,12 @@ import 'leaflet/dist/leaflet.css';
 import { MapContext } from './MapContext';
 import * as turf from '@turf/turf';
 
-const MapProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+interface MapProviderProps {
+  children: React.ReactNode;
+  setFeatures?: (features: any) => void;
+}
+
+const MapProvider: React.FC<MapProviderProps> = ({ children, setFeatures }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<L.Map | null>(null);
 
@@ -24,6 +29,11 @@ const MapProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       const linesFC = lines as GeoJSON.FeatureCollection<GeoJSON.LineString>;
       const polysFC = polys as GeoJSON.FeatureCollection;
 
+      const allFeatures = [...linesFC.features, ...polysFC.features];
+      if (setFeatures) {
+        setFeatures(allFeatures);
+      }
+
       L.geoJSON(linesFC, {
         style: { color: 'blue' }, // removed fillOpacity, not needed for lines
       }).addTo(leafletMap);
@@ -41,7 +51,9 @@ const MapProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
       leafletMap.fitBounds([sw, ne]);
       leafletMap.setMaxBounds([sw, ne]);
-      leafletMap.setMinZoom(leafletMap.getZoom());
+
+      leafletMap.setMinZoom(15);
+      leafletMap.setZoom(15);
 
       // Outer polygon covers almost entire world (lat, lng)
       const outer = [
@@ -61,12 +73,18 @@ const MapProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         [bbox[1], bbox[0]], // Close ring
       ];
 
-      L.polygon([outer, inner], {
-        color: '#000',
-        fillColor: '#fff',
-        fillOpacity: 1,
-        weight: 0,
-      }).addTo(leafletMap);
+      L.polygon(
+        [
+          outer as L.LatLngTuple[],
+          inner as L.LatLngTuple[],
+        ],
+        {
+          color: '#000',
+          fillColor: '#fff',
+          fillOpacity: 1,
+          weight: 0,
+        }
+      ).addTo(leafletMap);
     });
 
     setMap(leafletMap);
