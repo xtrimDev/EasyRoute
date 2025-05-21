@@ -4,14 +4,9 @@ import 'leaflet/dist/leaflet.css';
 import { MapContext } from './MapContext';
 import * as turf from '@turf/turf';
 
-interface MapProviderProps {
-  children: React.ReactNode;
-  setFeatures?: (features: any) => void;
-}
-
-const MapProvider: React.FC<MapProviderProps> = ({ children, setFeatures }) => {
-  const mapRef = useRef<HTMLDivElement>(null);
-  const [map, setMap] = useState<L.Map | null>(null);
+const MapProvider = ({ children, setFeatures }) => {
+  const mapRef = useRef(null);
+  const [map, setMap] = useState(null);
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -26,8 +21,8 @@ const MapProvider: React.FC<MapProviderProps> = ({ children, setFeatures }) => {
       fetch('/data/lines.geojson').then((res) => res.json()),
       fetch('/data/multipolygons.geojson').then((res) => res.json()),
     ]).then(([lines, polys]) => {
-      const linesFC = lines as GeoJSON.FeatureCollection<GeoJSON.LineString>;
-      const polysFC = polys as GeoJSON.FeatureCollection;
+      const linesFC = lines;
+      const polysFC = polys;
 
       const allFeatures = [...linesFC.features, ...polysFC.features];
       if (setFeatures) {
@@ -35,7 +30,7 @@ const MapProvider: React.FC<MapProviderProps> = ({ children, setFeatures }) => {
       }
 
       L.geoJSON(linesFC, {
-        style: { color: 'blue' }, // removed fillOpacity, not needed for lines
+        style: { color: 'blue' },
       }).addTo(leafletMap);
 
       L.geoJSON(polysFC, {
@@ -45,9 +40,8 @@ const MapProvider: React.FC<MapProviderProps> = ({ children, setFeatures }) => {
       const combined = turf.featureCollection([...linesFC.features, ...polysFC.features]);
       const bbox = turf.bbox(combined); // [minLng, minLat, maxLng, maxLat]
 
-      // Leaflet expects [lat, lng]
-      const sw: [number, number] = [bbox[1], bbox[0]]; // [minLat, minLng]
-      const ne: [number, number] = [bbox[3], bbox[2]]; // [maxLat, maxLng]
+      const sw = [bbox[1], bbox[0]]; // [minLat, minLng]
+      const ne = [bbox[3], bbox[2]]; // [maxLat, maxLng]
 
       leafletMap.fitBounds([sw, ne]);
       leafletMap.setMaxBounds([sw, ne]);
@@ -55,7 +49,6 @@ const MapProvider: React.FC<MapProviderProps> = ({ children, setFeatures }) => {
       leafletMap.setMinZoom(15);
       leafletMap.setZoom(15);
 
-      // Outer polygon covers almost entire world (lat, lng)
       const outer = [
         [-90, -180],
         [-90, 180],
@@ -64,27 +57,20 @@ const MapProvider: React.FC<MapProviderProps> = ({ children, setFeatures }) => {
         [-90, -180],
       ];
 
-      // Inner polygon is the bbox polygon (lat, lng)
       const inner = [
-        [bbox[1], bbox[0]], // SW (minLat, minLng)
-        [bbox[1], bbox[2]], // SE (minLat, maxLng)
-        [bbox[3], bbox[2]], // NE (maxLat, maxLng)
-        [bbox[3], bbox[0]], // NW (maxLat, minLng)
-        [bbox[1], bbox[0]], // Close ring
+        [bbox[1], bbox[0]],
+        [bbox[1], bbox[2]],
+        [bbox[3], bbox[2]],
+        [bbox[3], bbox[0]],
+        [bbox[1], bbox[0]],
       ];
 
-      L.polygon(
-        [
-          outer as L.LatLngTuple[],
-          inner as L.LatLngTuple[],
-        ],
-        {
-          color: '#000',
-          fillColor: '#fff',
-          fillOpacity: 1,
-          weight: 0,
-        }
-      ).addTo(leafletMap);
+      L.polygon([outer, inner], {
+        color: '#000',
+        fillColor: '#fff',
+        fillOpacity: 1,
+        weight: 2,
+      }).addTo(leafletMap);
     });
 
     setMap(leafletMap);
