@@ -1,5 +1,5 @@
 import React, { useState, useContext, useRef, useEffect } from "react";
-import { MapPin, ArrowLeft, ArrowDownUp, Locate } from "lucide-react";
+import { MapPin, ArrowLeft, ArrowDownUp, Locate, X } from "lucide-react";
 import { MapContext } from "./MapContext";
 import L from "leaflet";
 import * as turf from "@turf/turf";
@@ -27,6 +27,9 @@ const DirectionsPanel = ({
   startMarkRef,
   endMarkRef,
   linesGeoJSON,
+  onPointSelectionStart,
+  onPointSelectionEnd,
+  onMarking,
 }) => {
   const [startLocation, setStartLocation] = useState("");
   const [endLocation, setEndLocation] = useState("");
@@ -37,7 +40,7 @@ const DirectionsPanel = ({
   const nodeIndexRef = useRef({});
   const graphRef = useRef({});
 
-  const map = useContext(MapContext);
+  const { map } = useContext(MapContext);
 
   useEffect(() => {
     currentActionRef.current = currentAction;
@@ -94,6 +97,9 @@ const DirectionsPanel = ({
         const newMarker = L.marker(e.latlng, { icon: blueIcon }).addTo(map);
         startMarkRef.current = newMarker;
         setStartLocation(`${lat.toFixed(5)}, ${lng.toFixed(5)}`);
+        setCurrentAction("");
+        if (onPointSelectionEnd) onPointSelectionEnd();
+        if (onMarking) onMarking();
       } else if (currentActionRef.current === "end") {
         if (endMarkRef.current) {
           map.removeLayer(endMarkRef.current);
@@ -102,6 +108,9 @@ const DirectionsPanel = ({
         const newMarker = L.marker(e.latlng, { icon: redIcon }).addTo(map);
         endMarkRef.current = newMarker;
         setEndLocation(`${lat.toFixed(5)}, ${lng.toFixed(5)}`);
+        setCurrentAction("");
+        if (onPointSelectionEnd) onPointSelectionEnd();
+        if (onMarking) onMarking();
       }
     };
 
@@ -110,7 +119,28 @@ const DirectionsPanel = ({
     return () => {
       map.off("click", handleClick);
     };
-  }, [map]);
+  }, [map, onPointSelectionEnd]);
+
+  const handleClose = () => {
+    if (map) {
+      if (startMarkRef.current) {
+        map.removeLayer(startMarkRef.current);
+        startMarkRef.current = null;
+      }
+      if (endMarkRef.current) {
+        map.removeLayer(endMarkRef.current);
+        endMarkRef.current = null;
+      }
+      if (routingLineRef.current) {
+        map.removeLayer(routingLineRef.current);
+        routingLineRef.current = null;
+      }
+    }
+    setStartLocation("");
+    setEndLocation("");
+    setCurrentAction("");
+    onClose();
+  };
 
   const handleSwapLocations = () => {
     setIsSwapped((prev) => !prev);
@@ -129,6 +159,7 @@ const DirectionsPanel = ({
   };
 
   const handleGetDirections = () => {
+    
     const startPoint = startMarkRef.current;
     const endPoint = endMarkRef.current;
 
@@ -163,6 +194,18 @@ const DirectionsPanel = ({
       pathCoords.map((c) => [c[1], c[0]]),
       { color: "red" }
     ).addTo(map);
+
+    if (onMarking) onMarking();
+  };
+
+  const handlePointSelection = (type) => {
+    setCurrentAction(type);
+    if (onPointSelectionStart) onPointSelectionStart();
+  };
+
+  const cancelPointSelection = () => {
+    setCurrentAction("");
+    if (onPointSelectionEnd) onPointSelectionEnd();
   };
 
   /**---------------------------------------------------- */
@@ -235,7 +278,7 @@ const DirectionsPanel = ({
     <div className="w-full">
       <div className="flex items-center mb-4">
         <button
-          onClick={onClose}
+          onClick={handleClose}
           className="p-2 mr-2 rounded-full hover-gray-100"
         >
           <ArrowLeft size={20} />
@@ -257,7 +300,7 @@ const DirectionsPanel = ({
             <MapPin size={18} />
           </div>
           <button
-            onClick={() => setCurrentAction("start")}
+            onClick={() => handlePointSelection("start")}
             type="button"
             className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer"
             title="Use map to set starting point"
@@ -299,7 +342,7 @@ const DirectionsPanel = ({
           <MapPin size={18} />
         </div>
         <button
-          onClick={() => setCurrentAction("end")}
+          onClick={() => handlePointSelection("end")}
           type="button"
           className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer"
           title="Use map to set destination"

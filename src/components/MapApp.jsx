@@ -1,11 +1,9 @@
-import { useState, useRef, useContext, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 
 import MapCanvas from "./MapCanvas";
 import SearchBar from "./SearchBar";
 import DirectionsPanel from "./DirectionsPanel";
 import Controls from "./Controls";
-
-import { MapContext } from "./MapContext";
 
 import { Search, X } from "lucide-react";
 
@@ -13,12 +11,10 @@ const MapApp = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showDirections, setShowDirections] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSelectingPoint, setIsSelectingPoint] = useState(false);
 
   const [features, setFeatures] = useState([]);
   const [linesData, setLinesData] = useState(null);
-
-
-  const map = useContext(MapContext);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -40,22 +36,19 @@ const MapApp = () => {
 
   const toggleDirections = () => {
     setShowDirections(!showDirections);
-
-    if (map) {
-      if (startMarkRef.current) {
-        map.removeLayer(startMarkRef.current);
-        startMarkRef.current = null;
-      }
-
-      if (endMarkRef.current) {
-        map.removeLayer(endMarkRef.current);
-        endMarkRef.current = null;
-      }
-    }
   };
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const handlePointSelectionStart = () => {
+    setIsSelectingPoint(true);
+    setIsMobileMenuOpen(false);
+  };
+
+  const handlePointSelectionEnd = () => {
+    setIsSelectingPoint(false);
   };
 
   useEffect(() => {
@@ -65,10 +58,10 @@ const MapApp = () => {
       .catch(console.error);
   }, []);
 
-
   return (
     <div className="relative h-full w-full bg-gray-100">
       <MapCanvas setFeatures={setFeatures}>
+        {/* Mobile Menu Button */}
         {!isMobileMenuOpen ? (
           <div className="absolute top-4 left-4 md:hidden z-20">
             <button
@@ -80,6 +73,7 @@ const MapApp = () => {
           </div>
         ) : null}
 
+        {/* Desktop Search Panel */}
         <div className="absolute top-4 left-4 right-4 hidden md:block z-10 w-[400px] m-auto">
           <div className="bg-white/95 backdrop-blur-sm rounded-lg shadow-lg p-4 max-w-md mx-auto">
             {showDirections ? (
@@ -88,6 +82,8 @@ const MapApp = () => {
                 startMarkRef={startMarkRef}
                 endMarkRef={endMarkRef}
                 linesGeoJSON={linesData}
+                onPointSelectionStart={handlePointSelectionStart}
+                onPointSelectionEnd={handlePointSelectionEnd}
               />
             ) : (
               <SearchBar
@@ -98,6 +94,7 @@ const MapApp = () => {
           </div>
         </div>
 
+        {/* Mobile Search Panel */}
         <div
           className={`absolute inset-0 bg-white/95 backdrop-blur-sm z-10 transition-transform duration-300 ease-in-out md:hidden ${
             isMobileMenuOpen ? "translate-y-0" : "translate-y-full"
@@ -114,16 +111,25 @@ const MapApp = () => {
               </button>
             </div>
 
-            {showDirections ? (
-              <DirectionsPanel
-                onClose={toggleDirections}
-                startMarkRef={startMarkRef}
-                endMarkRef={endMarkRef}
-                linesGeoJSON={linesData}
-              />
-            ) : (
-              <SearchBar onGetDirections={toggleDirections} />
-            )}
+            <div className="flex-1 overflow-y-auto">
+              {showDirections ? (
+                <DirectionsPanel
+                  onClose={toggleDirections}
+                  startMarkRef={startMarkRef}
+                  endMarkRef={endMarkRef}
+                  linesGeoJSON={linesData}
+                  onPointSelectionStart={handlePointSelectionStart}
+                  onPointSelectionEnd={handlePointSelectionEnd}
+                  onMarking={toggleMobileMenu}
+                />
+              ) : (
+                <SearchBar 
+                  features={features} 
+                  onGetDirections={toggleDirections}
+                  onSearchResultClick={() => setIsMobileMenuOpen(false)}
+                />
+              )}
+            </div>
           </div>
         </div>
 
