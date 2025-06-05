@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
-import { ZoomIn, ZoomOut, Maximize, Minimize, Map } from "lucide-react";
+import { ZoomIn, ZoomOut, Maximize, Minimize, Map, Navigation } from "lucide-react";
 import ControlButton from "./ControlButton";
 import { useMap } from "./MapContext";
 
 const Controls = ({ toggleFullscreen, isFullscreen }) => {
-  const { map, changeMapStyle, currentStyle } = useMap();
+  const { map, changeMapStyle, currentStyle, showCurrentLocation } = useMap();
   const [showStyles, setShowStyles] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -48,6 +48,16 @@ const Controls = ({ toggleFullscreen, isFullscreen }) => {
 
         <ControlButton onClick={toggleFullscreen} tooltip="Toggle Fullscreen" className="cursor-pointer">
           {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
+        </ControlButton>
+
+        <div className="border-t border-gray-200 my-1"></div>
+
+        <ControlButton 
+          onClick={showCurrentLocation} 
+          tooltip="Show Current Location" 
+          className="cursor-pointer"
+        >
+          <Navigation size={20} />
         </ControlButton>
 
         <div className="border-t border-gray-200 my-1"></div>
