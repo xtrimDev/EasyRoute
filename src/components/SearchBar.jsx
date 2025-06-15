@@ -3,7 +3,7 @@ import { Search, X } from "lucide-react";
 import { useMap } from "./MapContext";
 import L from "leaflet";
 
-// Red marker icon
+// Red marker icon 
 const redIcon = new L.Icon({
   iconUrl: "/icons/marker-icon-red.png",
   shadowUrl: "/icons/marker-shadow.png",
@@ -69,7 +69,7 @@ const SearchBar = ({ features, onGetDirections, onSearchResultClick }) => {
       ).values()
     );
 
-    console.log("Search results:", uniqueResults);
+    // console.log("Search results:", uniqueResults);
     setSearchResults(uniqueResults);
     setShowResults(true);
   };
@@ -106,13 +106,13 @@ const SearchBar = ({ features, onGetDirections, onSearchResultClick }) => {
       }
 
       // Remove existing marker if any
-      if (markerRef.current) {
+    if (markerRef.current) {
         console.log("Removing existing marker");
-        map.removeLayer(markerRef.current);
+      map.removeLayer(markerRef.current);
         markerRef.current = null;
-      }
+    }
 
-      // Create new marker - Note: GeoJSON uses [longitude, latitude] order
+      // Create new marker Note: GeoJSON uses [longitude, latitude] order
       const latlng = L.latLng(coordinates[1], coordinates[0]);
       console.log("Creating marker at:", latlng);
       
@@ -142,9 +142,9 @@ const SearchBar = ({ features, onGetDirections, onSearchResultClick }) => {
       }
 
       // Create and add marker
-      const newMarker = L.marker(latlng, {
-        icon: redIcon,
-        title: feature.properties?.name || "Selected Location",
+    const newMarker = L.marker(latlng, {
+      icon: redIcon,
+      title: feature.properties?.name || "Selected Location",
       });
 
       // Add marker to map
@@ -155,7 +155,7 @@ const SearchBar = ({ features, onGetDirections, onSearchResultClick }) => {
         newMarker.bindPopup(feature.properties.name).openPopup();
       }
 
-      markerRef.current = newMarker;
+    markerRef.current = newMarker;
 
       // Zoom to the location with smooth animation
       console.log("Zooming to:", latlng);
@@ -202,9 +202,9 @@ const SearchBar = ({ features, onGetDirections, onSearchResultClick }) => {
 
   return (
     <div className="relative" ref={searchRef}>
-      <div className="relative">
-        <input
-          type="text"
+        <div className="relative">
+          <input
+            type="text"
           value={searchQuery}
           onChange={handleSearch}
           onFocus={() => setShowResults(true)}
@@ -212,18 +212,18 @@ const SearchBar = ({ features, onGetDirections, onSearchResultClick }) => {
           className="w-full px-4 py-2 pr-10 rounded-lg border border-gray-300 focus:outline-none"
         />
         {searchQuery && (
-          <button
+            <button
             onClick={clearSearch}
             className="absolute right-10 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full"
-          >
+            >
             <X size={16} className="text-gray-500" />
-          </button>
-        )}
+            </button>
+          )}
         <Search
           size={20}
           className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
         />
-      </div>
+        </div>
 
       {showResults && searchResults.length > 0 && (
         <div className="absolute z-50 w-full mt-1 bg-white rounded-lg shadow-lg max-h-[300px] overflow-y-auto">
@@ -233,14 +233,14 @@ const SearchBar = ({ features, onGetDirections, onSearchResultClick }) => {
               onClick={() => handleSearchResultClick(result)}
               className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
             >
-              <div className="font-medium">
+                      <div className="font-medium">
                 {result.properties.name || result.properties.title || "Unnamed Location"}
-              </div>
+                      </div>
               {result.properties.description && (
                 <div className="text-sm text-gray-600">
                   {result.properties.description}
-                </div>
-              )}
+              </div>
+            )}
             </div>
           ))}
         </div>
@@ -249,15 +249,15 @@ const SearchBar = ({ features, onGetDirections, onSearchResultClick }) => {
       {showResults && searchResults.length === 0 && searchQuery && (
         <div className="absolute z-50 w-full mt-1 bg-white rounded-lg shadow-lg p-4 text-center text-gray-500">
           No results found
-        </div>
-      )}
+          </div>
+        )}
 
-      <button
+        <button
         onClick={handleGetDirections}
         className="w-full mt-4 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors"
-      >
-        Get Directions
-      </button>
+        >
+          Get Directions
+        </button>
     </div>
   );
 };

@@ -96,7 +96,7 @@ const MapApp = () => {
 
         {/* Mobile Search Panel */}
         <div
-          className={`absolute inset-0 bg-white/95 backdrop-blur-sm z-10 transition-transform duration-300 ease-in-out md:hidden ${
+          className={`absolute inset-0 bg-white/95 backdrop-blur-sm z-[1002] transition-transform duration-300 ease-in-out md:hidden ${
             isMobileMenuOpen ? "translate-y-0" : "translate-y-full"
           }`}
         >
