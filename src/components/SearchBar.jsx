@@ -13,7 +13,7 @@ const redIcon = new L.Icon({
   shadowSize: [41, 41],
 });
 
-const SearchBar = ({ features, onGetDirections, onSearchResultClick }) => {
+const SearchBar = ({ features, onGetDirections, onSearchResultClick, routeInfo }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
@@ -191,73 +191,83 @@ const SearchBar = ({ features, onGetDirections, onSearchResultClick }) => {
   };
 
   const handleGetDirections = () => {
-    // Remove existing marker if any
     if (markerRef.current && map) {
       map.removeLayer(markerRef.current);
       markerRef.current = null;
     }
-    // Call the original onGetDirections callback
     onGetDirections();
   };
 
   return (
-    <div className="relative" ref={searchRef}>
-        <div className="relative">
+    <div className="relative flex flex-col w-full" ref={searchRef}>
+      {/* Prominent route info box */}
+      {routeInfo && (
+        <div className="mb-3 p-3 rounded-lg bg-blue-50 border border-blue-200 flex flex-row items-center justify-center gap-8 text-blue-900 font-semibold text-base shadow">
+          <span>Distance: {routeInfo.distance.toFixed(2)} km</span>
+          <span>Estimated Time: {routeInfo.time} min</span>
+        </div>
+      )}
+      {/* Top row: search input only */}
+      <div className="flex items-center w-full">
+        <div className="relative flex-1">
           <input
             type="text"
-          value={searchQuery}
-          onChange={handleSearch}
-          onFocus={() => setShowResults(true)}
-          placeholder="Search for a location..."
-          className="w-full px-4 py-2 pr-10 rounded-lg border border-gray-300 focus:outline-none"
-        />
-        {searchQuery && (
+            value={searchQuery}
+            onChange={handleSearch}
+            onFocus={() => setShowResults(true)}
+            placeholder="Search for a location..."
+            className="w-full px-4 py-2 pr-10 rounded-lg border border-gray-300 focus:outline-none"
+          />
+          {searchQuery && (
             <button
-            onClick={clearSearch}
-            className="absolute right-10 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full"
+              onClick={clearSearch}
+              className="absolute right-10 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full"
             >
-            <X size={16} className="text-gray-500" />
+              <X size={16} className="text-gray-500" />
             </button>
           )}
-        <Search
-          size={20}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-        />
+          <Search
+            size={20}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+          />
         </div>
+      </div>
 
+      {/* Results dropdown */}
       {showResults && searchResults.length > 0 && (
-        <div className="absolute z-50 w-full mt-1 bg-white rounded-lg shadow-lg max-h-[300px] overflow-y-auto">
+        <div className="absolute left-0 right-0 z-50 mt-1 bg-white rounded-lg shadow-lg max-h-[300px] overflow-y-auto">
           {searchResults.map((result, index) => (
             <div
               key={index}
               onClick={() => handleSearchResultClick(result)}
               className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
             >
-                      <div className="font-medium">
+              <div className="font-medium">
                 {result.properties.name || result.properties.title || "Unnamed Location"}
-                      </div>
+              </div>
               {result.properties.description && (
                 <div className="text-sm text-gray-600">
                   {result.properties.description}
-              </div>
-            )}
+                </div>
+              )}
             </div>
           ))}
         </div>
       )}
 
       {showResults && searchResults.length === 0 && searchQuery && (
-        <div className="absolute z-50 w-full mt-1 bg-white rounded-lg shadow-lg p-4 text-center text-gray-500">
+        <div className="absolute left-0 right-0 z-50 mt-1 bg-white rounded-lg shadow-lg p-4 text-center text-gray-500">
           No results found
-          </div>
-        )}
+        </div>
+      )}
 
-        <button
+      {/* Get Directions button */}
+      <button
         onClick={handleGetDirections}
         className="w-full mt-4 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors"
-        >
-          Get Directions
-        </button>
+      >
+        Get Directions
+      </button>
     </div>
   );
 };

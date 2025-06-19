@@ -30,6 +30,7 @@ const DirectionsPanel = ({
   onPointSelectionStart,
   onPointSelectionEnd,
   onMarking,
+  onRouteInfoChange,
 }) => {
   const [startLocation, setStartLocation] = useState("");
   const [endLocation, setEndLocation] = useState("");
@@ -210,7 +211,13 @@ const DirectionsPanel = ({
     const estTime = totalDistance / speedFactors[mode]; // in hours
     const estMinutes = Math.round(estTime * 60);
     if (estMinutes > 0) {
-      alert(`Estimated time: ${estMinutes} min (${totalDistance.toFixed(2)} km) by ${mode}`);
+      if (typeof onRouteInfoChange === 'function') {
+        onRouteInfoChange({
+          distance: totalDistance,
+          time: estMinutes,
+          mode,
+        });
+      }
     }
 
     if (onMarking) onMarking();

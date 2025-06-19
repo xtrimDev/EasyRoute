@@ -7,7 +7,7 @@ import Controls from "./Controls";
 
 import { Search, X } from "lucide-react";
 
-const MapApp = () => {
+const MapApp = ({ routeInfo, setRouteInfo }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showDirections, setShowDirections] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -84,11 +84,13 @@ const MapApp = () => {
                 linesGeoJSON={linesData}
                 onPointSelectionStart={handlePointSelectionStart}
                 onPointSelectionEnd={handlePointSelectionEnd}
+                onRouteInfoChange={setRouteInfo}
               />
             ) : (
               <SearchBar
                 features={features}
                 onGetDirections={toggleDirections}
+                routeInfo={routeInfo}
               />
             )}
           </div>
@@ -121,12 +123,14 @@ const MapApp = () => {
                   onPointSelectionStart={handlePointSelectionStart}
                   onPointSelectionEnd={handlePointSelectionEnd}
                   onMarking={toggleMobileMenu}
+                  onRouteInfoChange={setRouteInfo}
                 />
               ) : (
                 <SearchBar 
                   features={features} 
                   onGetDirections={toggleDirections}
                   onSearchResultClick={() => setIsMobileMenuOpen(false)}
+                  routeInfo={routeInfo}
                 />
               )}
             </div>
