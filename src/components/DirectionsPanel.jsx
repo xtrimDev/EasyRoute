@@ -39,8 +39,16 @@ const DirectionsPanel = ({
   const routingLineRef = useRef(null);
   const nodeIndexRef = useRef({});
   const graphRef = useRef({});
+  const [mode, setMode] = useState("walking");
 
   const { map } = useContext(MapContext);
+
+  // Speed factors in km/h for each mode
+  const speedFactors = {
+    walking: 5,
+    cycling: 15,
+    driving: 40,
+  };
 
   useEffect(() => {
     currentActionRef.current = currentAction;
@@ -74,14 +82,16 @@ const DirectionsPanel = ({
         const b = coords[i + 1];
         const keyA = addNode(a);
         const keyB = addNode(b);
-        const dist = turf.distance(turf.point(a), turf.point(b));
-        addEdge(keyA, keyB, dist);
+        const dist = turf.distance(turf.point(a), turf.point(b)); // in km
+        // Adjust weight based on selected mode's speed (time = distance / speed)
+        const weight = dist / speedFactors[mode];
+        addEdge(keyA, keyB, weight);
       }
     });
 
     nodeIndexRef.current = nodeIndex;
     graphRef.current = graph;
-  }, [linesGeoJSON]);
+  }, [linesGeoJSON, mode]);
 
   useEffect(() => {
     if (!map) return;
@@ -195,6 +205,14 @@ const DirectionsPanel = ({
       { color: "red" }
     ).addTo(map);
 
+    // Optionally, show estimated time
+    const totalDistance = getTotalDistance(pathCoords); // in km
+    const estTime = totalDistance / speedFactors[mode]; // in hours
+    const estMinutes = Math.round(estTime * 60);
+    if (estMinutes > 0) {
+      alert(`Estimated time: ${estMinutes} min (${totalDistance.toFixed(2)} km) by ${mode}`);
+    }
+
     if (onMarking) onMarking();
   };
 
@@ -272,6 +290,15 @@ const DirectionsPanel = ({
     }
     return path.map((k) => nodeIndexRef.current[k].coord);
   };
+
+  // Helper to calculate total distance
+  const getTotalDistance = (coords) => {
+    let dist = 0;
+    for (let i = 0; i < coords.length - 1; i++) {
+      dist += turf.distance(turf.point(coords[i]), turf.point(coords[i + 1]));
+    }
+    return dist;
+  };
   /**---------------------------------------------------- */
 
   return (
@@ -284,6 +311,28 @@ const DirectionsPanel = ({
           <ArrowLeft size={20} />
         </button>
         <h2 className="text-lg font-semibold">Directions</h2>
+      </div>
+
+      {/* Transport Mode Selector */}
+      <div className="flex justify-center mb-4 space-x-2">
+        <button
+          className={`px-3 py-1 rounded-full border ${mode === "walking" ? "bg-blue-500 text-white" : "bg-white text-gray-700"}`}
+          onClick={() => setMode("walking")}
+        >
+          🚶 Walking
+        </button>
+        <button
+          className={`px-3 py-1 rounded-full border ${mode === "cycling" ? "bg-blue-500 text-white" : "bg-white text-gray-700"}`}
+          onClick={() => setMode("cycling")}
+        >
+          🚴 Cycling
+        </button>
+        <button
+          className={`px-3 py-1 rounded-full border ${mode === "driving" ? "bg-blue-500 text-white" : "bg-white text-gray-700"}`}
+          onClick={() => setMode("driving")}
+        >
+          🚗 Driving
+        </button>
       </div>
 
       {/* Start input */}
