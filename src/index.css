@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+/* Custom styles for dark mode */
+.dark {
+  color-scheme: dark;
+}
+
+/* Ensure proper background colors */
+body {
+  background-color: var(--color-gray-50);
+}
+
+.dark body {
+  background-color: var(--color-gray-900);
+}
+
+/* Leaflet map container styles */
+.leaflet-container {
+  background-color: var(--color-white);
+}
+
+.dark .leaflet-container {
+  background-color: var(--color-gray-800);
+}
+
+/* Custom scrollbar for dark mode */
+.dark ::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background-color: #1f2937;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background-color: #4b5563;
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: #6b7280;
+}
+
