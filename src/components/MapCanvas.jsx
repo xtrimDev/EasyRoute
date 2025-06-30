@@ -5,8 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import { MapContext } from './MapContext';
 import * as turf from '@turf/turf';
 
-// TomTom API key - Replace with your actual API key
-const TOMTOM_API_KEY = "DpX5BjVjsheAFaIzc4k9DOGUCUpECORO";
+const TOMTOM_API_KEY = import.meta.env.VITE_TOMTOM_API_KEY;
 
 const mapStyles = {
   terrain: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
@@ -23,14 +22,12 @@ const MapCanvas = ({ children, setFeatures }) => {
   const trafficLayerRef = useRef(null);
   const trafficLegendRef = useRef(null);
 
-  // Add refs for POI layers
   const poiLayersRef = useRef({
     hospitals: null,
     hotels: null,
     petrolPumps: null
   });
 
-  // Function to get and show user's current location
   const showCurrentLocation = () => {
     if (!map) {
       console.log("Map not initialized yet");

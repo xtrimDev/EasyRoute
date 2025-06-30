@@ -1,17 +1,14 @@
-// Import the functions you need from the SDKs you need
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getAnalytics } from 'firebase/analytics';
 
-// TODO: Replace the following with your app's Firebase project configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyCzF8tiRZOT804gPfNdHUFEbrqigqjS-hU",
-  authDomain: "august-copilot-453118-r1.firebaseapp.com",
-  projectId: "august-copilot-453118-r1",
-  storageBucket: "august-copilot-453118-r1.firebasestorage.app",
-  messagingSenderId: "299397748195",
-  appId: "1:299397748195:web:02c3cc8671ccd36ce5bcd6",
-  measurementId: "G-2736L7HVCX"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
 // Initialize Firebase
