@@ -35,6 +35,7 @@ const MapApp = ({ routeInfo, setRouteInfo }) => {
   const endMarkRef = useRef(null);
 
   const toggleDirections = () => {
+    setRouteInfo(false);
     setShowDirections(!showDirections);
   };
 

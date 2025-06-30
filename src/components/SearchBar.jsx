@@ -200,13 +200,6 @@ const SearchBar = ({ features, onGetDirections, onSearchResultClick, routeInfo }
 
   return (
     <div className="relative flex flex-col w-full" ref={searchRef}>
-      {/* Prominent route info box */}
-      {routeInfo && (
-        <div className="mb-3 p-3 rounded-lg bg-blue-50 border border-blue-200 flex flex-row items-center justify-center gap-8 text-blue-900 font-semibold text-base shadow">
-          <span>Distance: {routeInfo.distance.toFixed(2)} km</span>
-          <span>Estimated Time: {routeInfo.time} min</span>
-        </div>
-      )}
       {/* Top row: search input only */}
       <div className="flex items-center w-full">
         <div className="relative flex-1">
@@ -235,7 +228,7 @@ const SearchBar = ({ features, onGetDirections, onSearchResultClick, routeInfo }
 
       {/* Results dropdown */}
       {showResults && searchResults.length > 0 && (
-        <div className="absolute left-0 right-0 z-50 mt-1 bg-white rounded-lg shadow-lg max-h-[300px] overflow-y-auto">
+        <div className="absolute left-0 right-0 z-50 mt-12 bg-white rounded-lg shadow-lg max-h-[300px] overflow-y-auto">
           {searchResults.map((result, index) => (
             <div
               key={index}
