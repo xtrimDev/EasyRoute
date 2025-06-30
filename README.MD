@@ -1,6 +1,6 @@
 
 ## Description
-SmartRoute Dehradun is a lightweight, responsive web application designed to help users find the shortest and most efficient paths within a specific part of Dehradun. Built using Dijkstra’s algorithm, the app calculates optimal routes based on the selected mode of travel: cycling, walking, or driving.
+EasyRoute is a lightweight, responsive web application designed to help users find the shortest and most efficient paths within a specific part of Dehradun. Built using Dijkstra’s algorithm, the app calculates optimal routes based on the selected mode of travel: cycling, walking, or driving.
 
 ## Deployment Methods
 
